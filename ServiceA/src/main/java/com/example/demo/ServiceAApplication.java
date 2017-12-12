@@ -1,8 +1,11 @@
 package com.example.demo;
 
+import org.springframework.amqp.core.Queue;
+import org.springframework.amqp.rabbit.core.RabbitMessagingTemplate;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.context.annotation.Bean;
 import org.springframework.core.env.Environment;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -15,6 +18,17 @@ public class ServiceAApplication {
 	@Autowired
 	Environment environment;
 	
+	RabbitMessagingTemplate template;
+	
+	@Autowired
+	ServiceAApplication(RabbitMessagingTemplate template){
+		this.template=template;
+	}
+	
+	@Bean
+	Queue queue() {
+		return new Queue("TestQ",false);
+	}
 	
 	public static void main(String[] args) {
 		SpringApplication.run(ServiceAApplication.class, args);
@@ -35,9 +49,19 @@ public class ServiceAApplication {
 		
 		RestTemplate resttemplate= new RestTemplate();
 		
-		str += resttemplate.getForObject("http://localhost:8092/serviceb", String.class);
+		str += resttemplate.getForObject("http://localhost:8091/serviceb", String.class);
 		
 		System.out.println(str);
+		
+		return str;
+	}
+	
+	@RequestMapping("/sendmessage")
+	public String callSendMessage()
+	{
+		String str = "This is in sendMessage";
+		System.out.println(str);
+		template.convertAndSend("TestQ", "Hello World!!!");
 		
 		return str;
 	}
