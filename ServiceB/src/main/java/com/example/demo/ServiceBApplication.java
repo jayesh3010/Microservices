@@ -1,5 +1,6 @@
 package com.example.demo;
 
+import org.springframework.amqp.rabbit.annotation.RabbitListener;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -39,6 +40,11 @@ public class ServiceBApplication {
 		System.out.println(str);
 		
 		return str;
+	}
+	
+	@RabbitListener(queues="TestQ")
+	public void processMessage(String content) {
+		System.out.println("Received Message in Listener :" + content);
 	}
 	
 }
